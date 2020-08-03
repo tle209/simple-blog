@@ -2,12 +2,12 @@
  * Build response message
  * @param {*} message
  */
-const buildResponseMessage = (message) => {
-    if (Array.isArray(message)) {
-        return [{ code: message }];
-    }
-    return message;
-};
+// const buildResponseMessage = (message) => {
+//     if (Array.isArray(message)) {
+//         return [];
+//     }
+//     return message;
+// };
 
 /**
  * Response handler
@@ -19,7 +19,7 @@ const buildResponseMessage = (message) => {
 const respond = (res, code, response) => {
     const responseObject = {
         success: (code < 300),
-        message: buildResponseMessage(response.message),
+        message: response.message,
         pagination: response.pagination ? response.pagination : {},
         data: response.data,
         error_code: response.error_code
