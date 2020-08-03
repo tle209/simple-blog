@@ -158,3 +158,5 @@ app.listen(serverConfig.port, () => {
     // listAllRoutes();
     return logger.trace(`Server started on http://localhost:${serverConfig.port}`);
 });
+
+module.exports = app;
