@@ -106,6 +106,16 @@ const validatePost = (item) => validate(item, {
     },
 });
 
+const validateComment = (item) => validate(item, {
+    content: {
+        type: 'string', empty: false, min: 20, max: 255
+    },
+    author: {
+        type: 'string', empty: false, min: 2, max: 255
+    },
+});
+
 module.exports = {
-    validatePost
+    validatePost,
+    validateComment
 };
