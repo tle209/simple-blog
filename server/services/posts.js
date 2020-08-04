@@ -79,8 +79,8 @@ const updatePost = async (req, res) => {
  * @param {*} res
  */
 const getPosts = async (req, res) => {
-    const { limit = pagination.limit, page = 1 } = req.query;
-    if (!page) {
+    const { limit = pagination.limit, page = 0 } = req.query;
+    if (!+page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
                 error_code: responseCode.BAD_REQUEST_CODE,
@@ -123,7 +123,7 @@ const getPosts = async (req, res) => {
 const getPost = async (req, res) => {
     const { postId } = req.params;
     const { limit = pagination.limit, page = 0 } = req.query;
-    if (!page) {
+    if (!+page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
                 error_code: responseCode.BAD_REQUEST_CODE,
@@ -139,7 +139,7 @@ const getPost = async (req, res) => {
                     model: 'Comments',
                     options: {
                         sort: { updatedAt: 1 },
-                        skip: limit * (page - 1),
+                        skip: +limit * (+page - 1),
                         limit
                     },
                 }

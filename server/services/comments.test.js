@@ -1,4 +1,6 @@
-const { describe, it, beforeEach } = require('mocha');
+const {
+    describe, it, before, after
+} = require('mocha');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const server = require('..');
@@ -14,10 +16,10 @@ describe('Comments', () => {
      * Post comments
      */
     describe('POST Comments', () => {
-        beforeEach((done) => { // Before each test we empty the database
+        before((done) => {
             const postParams = {
                 title: 'My test post',
-                body: `This is my test post. Please read carefully. I have create a new simple blog with simple functions\n.
+                body: `This is my test post on comment. Please read carefully. I have create a new simple blog with simple functions\n.
                     The first functions is: Create post\n. And the second is: Create comment`,
                 author: 'thuanle'
             };
@@ -47,9 +49,6 @@ describe('Comments', () => {
                     res.body.data.should.have.property('author');
                     res.body.data.should.have.property('createdAt');
                     res.body.data.should.have.property('updatedAt');
-                    res.body.data.post.should.equal(testPostId);
-                    res.body.data.body.should.equal(commentParams.content);
-                    res.body.data.author.should.equal(commentParams.author);
                     // eslint-disable-next-line no-underscore-dangle
                     testCommentId = res.body.data._id;
                     done();
@@ -57,7 +56,7 @@ describe('Comments', () => {
         });
 
         it('should have new comment in post return', (done) => {
-            chai.request(server).get(`/api/v1/posts/${testPostId}`).end((err, res) => {
+            chai.request(server).get(`/api/v1/posts/${testPostId}?page=1&limit=10`).end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('object');
                 res.body.data.should.be.a('object');
@@ -193,7 +192,7 @@ describe('Comments', () => {
         });
         it('should return 400 on /api/v1/posts/<postId>/comments GET without pagination', (done) => {
             chai.request(server)
-                .get(`/api/v1/posts/${testPostId}/comments?page=1&limit=10`)
+                .get(`/api/v1/posts/${testPostId}/comments`)
                 .end((err, res) => {
                     res.should.have.status(400);
                     res.body.success.should.equal(false);
@@ -221,7 +220,7 @@ describe('Comments', () => {
                     res.body.message.should.equal(1);
                     res.body.should.be.a('object');
                     res.body.data.should.be.a('object');
-                    res.body.data.nModified.should.equal(1);
+                    res.body.data.ok.should.equal(1);
                     done();
                 });
         });
@@ -342,6 +341,13 @@ describe('Comments', () => {
                     res.body.should.be.a('object');
                     res.body.success.should.equal(true);
                     res.body.message.should.equal(1);
+                    done();
+                });
+        });
+        after((done) => {
+            chai.request(server)
+                .delete(`/api/v1/posts/${testPostId}`)
+                .end(() => {
                     done();
                 });
         });

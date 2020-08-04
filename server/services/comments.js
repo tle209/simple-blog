@@ -106,7 +106,7 @@ const getComments = async (req, res) => {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
                 error_code: responseCode.BAD_REQUEST_CODE,
-                message: responseMessage.PARAMS_IS_MISSING
+                message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'page' }]
             });
     }
     try {
@@ -149,7 +149,7 @@ const deleteComment = async (req, res) => {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
                 error_code: responseCode.BAD_REQUEST_CODE,
-                message: responseMessage.PARAMS_IS_MISSING
+                message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'commentId' }]
             });
     }
     try {

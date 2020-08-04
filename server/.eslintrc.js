@@ -16,9 +16,9 @@ module.exports = {
     "comma-dangle": ["error", "only-multiline"],
     semi: ["error", "always"],
     "prefer-promise-reject-errors": 0,
-    "linebreak-style": [
-      "error",
-      process.env.NODE_ENV === "prod" ? "unix" : "windows",
-    ],
+    // "linebreak-style": [
+    //   "error",
+    //   process.env.NODE_ENV === "prod" ? "unix" : "windows",
+    // ],
   },
 };
