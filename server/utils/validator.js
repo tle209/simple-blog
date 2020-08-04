@@ -94,6 +94,10 @@ const validate = (fields, schema) => {
     return results;
 };
 
+/**
+ * Validate post
+ * @param {*} item
+ */
 const validatePost = (item) => validate(item, {
     title: {
         type: 'string', empty: false, min: 10, max: 255
@@ -106,6 +110,10 @@ const validatePost = (item) => validate(item, {
     },
 });
 
+/**
+ * Validate comment
+ * @param {*} item
+ */
 const validateComment = (item) => validate(item, {
     content: {
         type: 'string', empty: false, min: 20, max: 255

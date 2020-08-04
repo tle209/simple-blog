@@ -101,7 +101,7 @@ const updateComment = async (req, res) => {
  * @param {*} res
  */
 const getComments = async (req, res) => {
-    const { limit, page } = req.query || { page: 0, limit: pagination.limit };
+    const { limit = pagination.limit, page = 0 } = req.query;
     if (!page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {

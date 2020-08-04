@@ -79,7 +79,7 @@ const updatePost = async (req, res) => {
  * @param {*} res
  */
 const getPosts = async (req, res) => {
-    const { limit, page } = req.query || { page: 0, limit: pagination.limit };
+    const { limit = pagination.limit, page = 1 } = req.query;
     if (!page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
@@ -122,7 +122,7 @@ const getPosts = async (req, res) => {
  */
 const getPost = async (req, res) => {
     const { postId } = req.params;
-    const { limit, page } = req.query || { page: 0, limit: pagination.limit };
+    const { limit = pagination.limit, page = 0 } = req.query;
     if (!page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
