@@ -1,15 +1,4 @@
 /**
- * Build response message
- * @param {*} message
- */
-// const buildResponseMessage = (message) => {
-//     if (Array.isArray(message)) {
-//         return [];
-//     }
-//     return message;
-// };
-
-/**
  * Response handler
  * @param {*} res
  * @param {*} next

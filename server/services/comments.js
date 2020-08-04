@@ -1,21 +1,23 @@
 const { isEmpty } = require('lodash');
 const mongoose = require('mongoose');
+const Comments = require('../models/comments');
 const Posts = require('../models/posts');
 const { pagination } = require('../config');
 const respond = require('../utils/responses');
-const { validatePost } = require('../utils/validator');
+const { validateComment } = require('../utils/validator');
 const logger = require('../utils/logger');
 const responseCode = require('../const/responseCode');
 const responseMessage = require('../const/responseMessages');
 
 /**
- * Create post handler
+ * Create Comment handler
  * @param {*} req
  * @param {*} res
  */
-const createPost = async (req, res) => {
-    const post = { ...req.body };
-    const validateResults = validatePost(post);
+const createComment = async (req, res) => {
+    const comment = { ...req.body };
+    const { postId } = req.params;
+    const validateResults = validateComment(comment);
     if (!isEmpty(validateResults)) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
@@ -23,14 +25,34 @@ const createPost = async (req, res) => {
                 message: validateResults
             });
     }
+    // Start transaction
+    const session = await Comments.startSession();
+    session.startTransaction();
     try {
-        const response = await Posts.create(post);
+        const post = await Posts.findOne({ _id: new mongoose.Types.ObjectId(postId) });
+        if (isEmpty(post)) {
+            return respond(res, responseCode.BAD_REQUEST_CODE,
+                {
+                    error_code: responseCode.BAD_REQUEST_CODE,
+                    message: responseMessage.POST_NOT_FOUND
+                });
+        }
+        const commentResponse = await Comments.create({ post: new mongoose.Types.ObjectId(postId), ...comment });
+        // eslint-disable-next-line no-underscore-dangle
+        post.comments.push(commentResponse._id);
+        await Posts.update({ _id: new mongoose.Types.ObjectId(postId) }, post);
+        // Submit transaction: successful case
+        await session.commitTransaction();
+        session.endSession();
         return respond(res, responseCode.CREATED_CODE,
             {
                 message: responseMessage.SUCCESS,
-                data: response
+                data: commentResponse
             });
     } catch (error) {
+        // Rollback transaction: Failure case
+        await session.abortTransaction();
+        session.endSession();
         logger.error(error);
         return respond(res, responseCode.UNEXPECTED_ERROR_CODE,
             {
@@ -41,14 +63,14 @@ const createPost = async (req, res) => {
 };
 
 /**
- * Update post handler
+ * Update Comment handler
  * @param {*} req
  * @param {*} res
  */
-const updatePost = async (req, res) => {
-    const post = { ...req.body };
-    const { postId } = req.params;
-    const validateResults = validatePost(post);
+const updateComment = async (req, res) => {
+    const comment = { ...req.body };
+    const { postId, commentId } = req.params;
+    const validateResults = validateComment(comment);
     if (!isEmpty(validateResults)) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
@@ -57,7 +79,7 @@ const updatePost = async (req, res) => {
             });
     }
     try {
-        const response = await Posts.update({ _id: new mongoose.Types.ObjectId(postId) }, post);
+        const response = await Comments.update({ _id: new mongoose.Types.ObjectId(commentId), postId }, comment);
         return respond(res, responseCode.SUCCEEDED_CODE,
             {
                 message: responseMessage.SUCCESS,
@@ -74,13 +96,13 @@ const updatePost = async (req, res) => {
 };
 
 /**
- * Get posts handler
+ * Get Comment handler
  * @param {*} req
  * @param {*} res
  */
-const getPosts = async (req, res) => {
+const getComments = async (req, res) => {
     const { limit = pagination.limit, page = 0 } = req.query;
-    if (!+page) {
+    if (!page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
                 error_code: responseCode.BAD_REQUEST_CODE,
@@ -88,12 +110,13 @@ const getPosts = async (req, res) => {
             });
     }
     try {
+        const skip = limit * (page - 1);
         const [responses, count] = await Promise.all([
-            Posts.find({})
+            Comments.find({})
                 .sort({ updatedAt: -1 })
-                .skip(limit * (page - 1))
+                .skip(skip)
                 .limit(parseInt(limit, 10)),
-            Posts.count({})
+            Comments.count({})
         ]);
         return respond(res, responseCode.SUCCEEDED_CODE,
             {
@@ -116,72 +139,21 @@ const getPosts = async (req, res) => {
 };
 
 /**
- * Get single post handler
+ * Delete Comment handler
  * @param {*} req
  * @param {*} res
  */
-const getPost = async (req, res) => {
-    const { postId } = req.params;
-    const { limit = pagination.limit, page = 0 } = req.query;
-    if (!+page) {
+const deleteComment = async (req, res) => {
+    const { commentId } = req.params;
+    if (!commentId) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
                 error_code: responseCode.BAD_REQUEST_CODE,
-                message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'page' }]
+                message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'commentId' }]
             });
     }
     try {
-        const response = await Posts
-            .findOne({ _id: new mongoose.Types.ObjectId(postId) })
-            .populate(
-                {
-                    path: 'comments',
-                    model: 'Comments',
-                    options: {
-                        sort: { updatedAt: 1 },
-                        skip: +limit * (+page - 1),
-                        limit
-                    },
-                }
-            )
-            .populate('totalComments');
-
-        return respond(res, responseCode.SUCCEEDED_CODE,
-            {
-                message: responseMessage.SUCCESS,
-                pagination: {
-                    page: +page,
-                    limit: +limit || pagination.limit,
-                    total: response.totalComments
-                },
-                data: response
-            });
-    } catch (error) {
-        logger.error(error);
-        return respond(res, responseCode.UNEXPECTED_ERROR_CODE,
-            {
-                error_code: responseCode.UNEXPECTED_ERROR_CODE,
-                message: responseMessage.CONTACT_ADMIN
-            });
-    }
-};
-
-/**
- * Delete post handler
- * @param {*} req
- * @param {*} res
- */
-const deletePost = async (req, res) => {
-    const { postId } = req.params;
-    if (!postId) {
-        return respond(res, responseCode.BAD_REQUEST_CODE,
-            {
-                error_code: responseCode.BAD_REQUEST_CODE,
-                message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'postId' }]
-            });
-    }
-    try {
-        await Posts.deleteOne({ _id: new mongoose.Types.ObjectId(postId) });
+        await Comments.deleteOne({ _id: new mongoose.Types.ObjectId(commentId) });
         return respond(res, responseCode.SUCCEEDED_CODE, { message: responseMessage.SUCCESS });
     } catch (error) {
         logger.error(error);
@@ -194,9 +166,8 @@ const deletePost = async (req, res) => {
 };
 
 module.exports = {
-    createPost,
-    updatePost,
-    getPosts,
-    getPost,
-    deletePost
+    createComment,
+    updateComment,
+    getComments,
+    deleteComment
 };
