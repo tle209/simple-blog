@@ -1,26 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import ArticleList from "./components/articles/ArticleList";
+import ArticleItems from "./components/articles/ArticleItems";
+class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      articleItems: [],
+    };
+  }
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  addArticle = (taskName) => {
+    const newArticle = {
+      text: taskName,
+      key: Date.now(),
+    };
+    if (taskName !== null && taskName !== "") {
+      const articleItems = [...this.state.articleItems, newArticle];
+      this.setState({
+        articleItems,
+      });
+    }
+  };
+
+  render() {
+    return (
+      <div>
+        <ArticleList addArticle={this.addArticle} />
+        <ArticleItems entries={this.state.articleItems} />
+      </div>
+    );
+  }
 }
-
 export default App;
