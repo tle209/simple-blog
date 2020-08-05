@@ -1,0 +1,15 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    container_name: simpleblog_db
+    environment:
+      - MONGO_INITDB_DATABASE=simpleblog_db
+      - MONGO_NON_ROOT_USERNAME=admin
+      - MONGO_NON_ROOT_PASSWORD=simpleblog2020
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=simpleblog2020
+    volumes:
+      - ~/mongodata:/data/db
+    ports:
+      - 27017:27017

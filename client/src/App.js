@@ -1,34 +1,15 @@
-import React, { Component } from "react";
-import ArticleList from "./components/articles/ArticleList";
-import ArticleItems from "./components/articles/ArticleItems";
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      articleItems: [],
-    };
-  }
+import React from 'react';
+import ContextState from './context_state_config';
 
-  addArticle = (taskName) => {
-    const newArticle = {
-      text: taskName,
-      key: Date.now(),
-    };
-    if (taskName !== null && taskName !== "") {
-      const articleItems = [...this.state.articleItems, newArticle];
-      this.setState({
-        articleItems,
-      });
-    }
-  };
+const App = () => {
 
-  render() {
-    return (
+    return(
       <div>
-        <ArticleList addArticle={this.addArticle} />
-        <ArticleItems entries={this.state.articleItems} />
+      React
+      <ContextState />
       </div>
-    );
-  }
+    )
 }
+
+
 export default App;
