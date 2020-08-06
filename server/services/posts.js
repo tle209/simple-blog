@@ -80,6 +80,7 @@ const updatePost = async (req, res) => {
  */
 const getPosts = async (req, res) => {
     const { limit = pagination.limit, page = 0 } = req.query;
+    console.log({ limit, page });
     if (!+page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
@@ -95,6 +96,7 @@ const getPosts = async (req, res) => {
                 .limit(parseInt(limit, 10)),
             Posts.count({})
         ]);
+        console.log({ responses, count });
         return respond(res, responseCode.SUCCEEDED_CODE,
             {
                 message: responseMessage.SUCCESS,

@@ -1,9 +1,7 @@
-import React from 'react'
+import React from 'react';
+import ArticleList from '../components/articles/articleList';
 
-const Home = props => (
-    <div>
-      Home
-    </div>
-);
+const Home = (props) => (<ArticleList/>);
+
 
 export default Home;

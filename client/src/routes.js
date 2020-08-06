@@ -11,6 +11,7 @@ import Callback from './hooks/callback';
 import HooksForm from './hooks/hooks_form1';
 import PrivateComponent from './hooks/privatecomponent';
 import Profile from './hooks/profile';
+import ArticleItem from './components/articles/articleItem';
 
 
 
@@ -31,29 +32,30 @@ const Routes = () => {
       return(
         <div>
           <Router history={history} >
-          <Header />
-          <br />
-          <br />
-          <div>
-            <Switch>
-              <Route exact path='/' component={Home} />
-              <Route path='/hooksform' component={HooksForm} />
-              <Route path='/profile' component={Profile} />
-              <Route path='/hookscontainer' component={HooksContainer1} />
-              <Route path='/authcheck' component={AuthCheck} />
+            <Header />
+            <br />
+            <br />
+            <div>
+              <Switch>
+                <Route exact path='/' component={Home} />
+                <Route path='/hooksform' component={HooksForm} />
+                <Route path='/profile' component={Profile} />
+                <Route path='/hookscontainer' component={HooksContainer1} />
+                <Route path='/authcheck' component={AuthCheck} />
 
-              <PrivateRoute path='/privateroute'
-                            auth={context.authState}
-                            component={PrivateComponent} />
-              <PrivateRoute path="/profile"
-                            auth={context.authState}
-                            component={Profile} />
-              <Route path='/callback' render={(props) => { context.handleAuth(props);
-                                                            return <Callback />}} />
+                <PrivateRoute path='/privateroute'
+                              auth={context.authState}
+                              component={PrivateComponent} />
+                <PrivateRoute path="/profile"
+                              auth={context.authState}
+                              component={Profile} />
+                <Route path='/callback' render={(props) => { context.handleAuth(props);
+                                                              return <Callback />}} />
+                <Route path='/posts/:postId' component={ArticleItem} />
 
 
-            </Switch>
-          </div>
+              </Switch>
+            </div>
           </Router>
         </div>
   )}
