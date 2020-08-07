@@ -5,8 +5,8 @@ import Context from '../utils/context';
 const Header = () => {
   const context = useContext(Context)
     return(
-        <div className='container mt-5 row'>
-          <div className='col-md-8'>
+        <div className='container mt-5 row justify-content-between'>
+          <div className='col-md-4'>
             <Link to='/' style={{padding: '5px'}}>Home</Link>
           </div>
 
@@ -22,7 +22,7 @@ const Header = () => {
           <Link to='/privateroute' style={{padding: '5px'}}>
             Private Route
           </Link> */}
-          <div className='col-md-4'>
+          <div className='col-md-2'>
             {!context.authState
               ? <button className='btn btn-primary' onClick={() => context.authObj.login()}>Login</button>
               : <button className='btn btn-primary' onClick={() => context.authObj.logout()}>Logout</button>

@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom'
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; 
 import './article.scss';
 
 const ArticleList = () => {
@@ -30,19 +31,19 @@ const ArticleList = () => {
                 {articles.length > 0 
                 ? articles.map(post => {
                     return (
-                        <div className="card">
-                            <div className="card-header">{post.title} - <Link to={`/posts/${post._id}`}>{post._id}</Link></div>
+                        <div key={post._id} className="card">
+                            <div className="card-header"><FontAwesomeIcon icon={['far', 'newspaper']}/> {post.title}</div>
                             <div className="card-body">
                                 <blockquote className="blockquote mb-0">
                                     <p className="card-text">{post.body}</p>
                                     <footer className="blockquote-footer">{post.author}</footer>
                                 </blockquote>
                             </div>
-                            <footer className="card-footer">({post.comments.length}) comments</footer>
+                            <footer className="card-footer"><FontAwesomeIcon icon={['far', 'comments']}/> <Link to={`/posts/${post._id}`}>({post.comments.length}) comments</Link></footer>
                         </div>
                     );
                 })
-                : <li>{"Article is empty. Please add new Article"}</li>}
+                : <p>{"Article is empty. Please add new Article"}</p>}
             </div>
         </div>
       );
