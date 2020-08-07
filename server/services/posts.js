@@ -1,6 +1,7 @@
 const { isEmpty } = require('lodash');
 const mongoose = require('mongoose');
 const Posts = require('../models/posts');
+const Comments = require('../models/comments');
 const { pagination } = require('../config');
 const respond = require('../utils/responses');
 const { validatePost } = require('../utils/validator');
@@ -80,7 +81,6 @@ const updatePost = async (req, res) => {
  */
 const getPosts = async (req, res) => {
     const { limit = pagination.limit, page = 0 } = req.query;
-    console.log({ limit, page });
     if (!+page) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
             {
@@ -96,7 +96,6 @@ const getPosts = async (req, res) => {
                 .limit(parseInt(limit, 10)),
             Posts.count({})
         ]);
-        console.log({ responses, count });
         return respond(res, responseCode.SUCCEEDED_CODE,
             {
                 message: responseMessage.SUCCESS,
@@ -182,11 +181,27 @@ const deletePost = async (req, res) => {
                 message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'postId' }]
             });
     }
+    let session;
     try {
+        // Start transaction
+        session = await Posts.startSession();
+        session.startTransaction();
+
         await Posts.deleteOne({ _id: new mongoose.Types.ObjectId(postId) });
+        await Comments.deleteMany({ post: postId });
+
+        // Submit transaction: successful case
+        await session.commitTransaction();
+        session.endSession();
+
         return respond(res, responseCode.SUCCEEDED_CODE, { message: responseMessage.SUCCESS });
     } catch (error) {
         logger.error(error);
+
+        // Rollback transaction: Failure case
+        await session.abortTransaction();
+        session.endSession();
+
         return respond(res, responseCode.UNEXPECTED_ERROR_CODE,
             {
                 error_code: responseCode.UNEXPECTED_ERROR_CODE,
