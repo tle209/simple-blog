@@ -49,6 +49,7 @@ const createPost = async (req, res) => {
 const updatePost = async (req, res) => {
     const post = { ...req.body };
     const { postId } = req.params;
+    console.log('req.body', req.body);
     const validateResults = validatePost(post);
     if (!isEmpty(validateResults)) {
         return respond(res, responseCode.BAD_REQUEST_CODE,

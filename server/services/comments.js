@@ -85,7 +85,7 @@ const updateComment = async (req, res) => {
             });
     }
     try {
-        const response = await Comments.update({ _id: new mongoose.Types.ObjectId(commentId), postId }, comment);
+        const response = await Comments.update({ _id: new mongoose.Types.ObjectId(commentId), post: postId }, comment);
         return respond(res, responseCode.SUCCEEDED_CODE,
             {
                 message: responseMessage.SUCCESS,
