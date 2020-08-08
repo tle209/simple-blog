@@ -1,6 +1,7 @@
 const { isEmpty } = require('lodash');
 const mongoose = require('mongoose');
 const Posts = require('../models/posts');
+const Comments = require('../models/comments');
 const { pagination } = require('../config');
 const respond = require('../utils/responses');
 const { validatePost } = require('../utils/validator');
@@ -48,6 +49,7 @@ const createPost = async (req, res) => {
 const updatePost = async (req, res) => {
     const post = { ...req.body };
     const { postId } = req.params;
+    console.log('req.body', req.body);
     const validateResults = validatePost(post);
     if (!isEmpty(validateResults)) {
         return respond(res, responseCode.BAD_REQUEST_CODE,
@@ -180,11 +182,27 @@ const deletePost = async (req, res) => {
                 message: [{ code: responseMessage.PARAMS_IS_MISSING, field: 'postId' }]
             });
     }
+    let session;
     try {
+        // Start transaction
+        session = await Posts.startSession();
+        session.startTransaction();
+
         await Posts.deleteOne({ _id: new mongoose.Types.ObjectId(postId) });
+        await Comments.deleteMany({ post: postId });
+
+        // Submit transaction: successful case
+        await session.commitTransaction();
+        session.endSession();
+
         return respond(res, responseCode.SUCCEEDED_CODE, { message: responseMessage.SUCCESS });
     } catch (error) {
         logger.error(error);
+
+        // Rollback transaction: Failure case
+        await session.abortTransaction();
+        session.endSession();
+
         return respond(res, responseCode.UNEXPECTED_ERROR_CODE,
             {
                 error_code: responseCode.UNEXPECTED_ERROR_CODE,

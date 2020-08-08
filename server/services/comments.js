@@ -25,10 +25,13 @@ const createComment = async (req, res) => {
                 message: validateResults
             });
     }
-    // Start transaction
-    const session = await Comments.startSession();
-    session.startTransaction();
+
+    let session;
     try {
+        // Start transaction
+        session = await Comments.startSession();
+        session.startTransaction();
+
         const post = await Posts.findOne({ _id: new mongoose.Types.ObjectId(postId) });
         if (isEmpty(post)) {
             return respond(res, responseCode.BAD_REQUEST_CODE,
@@ -41,6 +44,7 @@ const createComment = async (req, res) => {
         // eslint-disable-next-line no-underscore-dangle
         post.comments.push(commentResponse._id);
         await Posts.update({ _id: new mongoose.Types.ObjectId(postId) }, post);
+
         // Submit transaction: successful case
         await session.commitTransaction();
         session.endSession();
@@ -50,10 +54,12 @@ const createComment = async (req, res) => {
                 data: commentResponse
             });
     } catch (error) {
+        logger.error(error);
+
         // Rollback transaction: Failure case
         await session.abortTransaction();
         session.endSession();
-        logger.error(error);
+
         return respond(res, responseCode.UNEXPECTED_ERROR_CODE,
             {
                 error_code: responseCode.UNEXPECTED_ERROR_CODE,
@@ -79,7 +85,7 @@ const updateComment = async (req, res) => {
             });
     }
     try {
-        const response = await Comments.update({ _id: new mongoose.Types.ObjectId(commentId), postId }, comment);
+        const response = await Comments.update({ _id: new mongoose.Types.ObjectId(commentId), post: postId }, comment);
         return respond(res, responseCode.SUCCEEDED_CODE,
             {
                 message: responseMessage.SUCCESS,
